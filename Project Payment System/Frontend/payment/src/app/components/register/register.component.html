@@ -1,0 +1,139 @@
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-10 col-xl-9 mx-auto">
+        <div
+          class="card flex-row my-5 border-0 shadow rounded-3 overflow-hidden"
+        >
+          <div class="card-img-left d-none d-md-flex">
+            <!-- Background image for card set in CSS! -->
+          </div>
+          <div class="card-body p-4 p-sm-5">
+            <h3 class="card-title text-center mb-5 fw-light fs-9">Register</h3>
+
+
+            <form #registerForm = "ngForm" (ngSubmit)="register(registerForm.value)">
+              <div class="form-floating mb-3">
+                <input
+                  type="email"
+                  class="form-control"
+                  name="email"
+                  ngModel
+                  required
+                  autofocus
+                />
+                <label for="floatingInputEmail">Email</label>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input
+                  type="password"
+                  class="form-control"
+                  name="password"
+                  ngModel
+                  required
+                />
+                <label>Password</label>
+              </div>
+
+              <hr />
+
+              <div>Choose your service provider:
+
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="biller"
+                  value="Jio"
+                  checked
+                  ngModel
+                />
+                <label class="form-check-label">
+                  Jio
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="biller"
+                  value="Airtel"
+                  ngModel
+                />
+                <label class="form-check-label">
+                  Airtel
+                </label>
+              </div>
+            </div>
+              <hr />
+              Auto Recharge:
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="autopay"
+                  value="Yes"
+                  checked
+                  ngModel
+                />
+                <label class="form-check-label" >
+                  Yes
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="autopay"
+                  value="No"
+                  ngModel
+                />
+                <label class="form-check-label">
+                  No
+                </label>
+              </div>
+              <hr>
+
+    
+              <div class="form-floating mb-3">
+                <input
+                  type="number"
+                  class="form-control"
+                  name="accNo"
+                  required
+                  ngModel
+                />
+                <label for="accNo">AccountNumber</label>
+              </div>
+
+              <div class="d-grid mb-2">
+                <input
+                  class="btn btn-lg btn-primary btn-login fw-bold text-uppercase"
+                  type="submit" value="Register"
+                >
+              </div>
+
+              <a class="d-block text-center mt-2 small" href="#"
+                >Have an account? Sign In</a
+              >
+              <hr class="my-4" />
+
+              <!-- <div class="d-grid mb-2">
+                  <button class="btn btn-lg btn-google btn-login fw-bold text-uppercase" type="submit">
+                    <i class="fab fa-google me-2"></i> Sign up with Google
+                  </button>
+                </div>
+  
+                <div class="d-grid">
+                  <button class="btn btn-lg btn-facebook btn-login fw-bold text-uppercase" type="submit">
+                    <i class="fab fa-facebook-f me-2"></i> Sign up with Facebook
+                  </button>
+                </div> -->
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
