@@ -2,16 +2,18 @@ import pandas as pd
 import requests
 from urllib.parse import urlparse
 import openpyxl
+import os
 
-# Function to download HTML files
-def download_html_file(url):
+# Function to download HTML files into a folder
+def download_html_file(url, folder_path):
     try:
         response = requests.get(url)
         if response.status_code == 200:
             # Extract the filename from the URL
             file_name = urlparse(url).path.split('/')[-1]
-            # Save the HTML content to a file
-            with open(file_name, 'wb') as file:
+            # Save the HTML content to a file inside the folder
+            file_path = os.path.join(folder_path, file_name)
+            with open(file_path, 'wb') as file:
                 file.write(response.content)
             print(f"Downloaded: {file_name}")
         else:
@@ -19,30 +21,14 @@ def download_html_file(url):
     except Exception as e:
         print(f"Error downloading {url}: {str(e)}")
 
-# Function to get hyperlink address from Excel
-def get_hyperlink_address(excel_file, sheet_name, cell_address):
-    try:
-        # Load the Excel workbook
-        workbook = openpyxl.load_workbook(excel_file, data_only=True)
-        
-        # Select the desired sheet
-        sheet = workbook[sheet_name]
-        
-        # Get the hyperlink from the specified cell
-        hyperlink = sheet[cell_address].hyperlink
-
-        if hyperlink:
-            return hyperlink.target
-        else:
-            return None
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
 # Replace 'your_excel_file.xlsx' and 'Sheet1' with the actual file and sheet name
 excel_file = 'your_excel_file.xlsx'
 sheet_name = 'Sheet1'
+
+# Create a folder to store downloaded files
+output_folder = 'downloaded_files'
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 # Load the Excel file
 df = pd.read_excel(excel_file)
@@ -50,10 +36,10 @@ df = pd.read_excel(excel_file)
 # Assuming the HTML file URLs are in a column named 'URL'
 url_column = 'URL'
 
-# Iterate through the URLs in the Excel file, download HTML files, and get hyperlinks
+# Iterate through the URLs in the Excel file, download HTML files into the folder
 for index, row in df.iterrows():
     url = row[url_column]
-    download_html_file(url)
+    download_html_file(url, output_folder)
     
     # Get hyperlink address for cell K(index+2)
     cell_address = f'K{index + 2}'
