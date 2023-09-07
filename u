@@ -1,0 +1,43 @@
+import pandas as pd
+import requests
+from openpyxl import load_workbook
+
+# Load the Excel file containing the hyperlinks
+excel_file = 'links.xlsx'  # Replace with the path to your Excel file
+df = pd.read_excel(excel_file)
+
+# Define a function to download HTML from a URL
+def download_html(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
+        else:
+            print(f"Failed to download {url}. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Error downloading {url}: {e}")
+        return None
+
+# Iterate through the rows in the DataFrame
+for index, row in df.iterrows():
+    hyperlink = row['Hyperlink']  # Assuming your Excel column is named 'Hyperlink'
+    
+    if pd.notna(hyperlink):  # Check if the cell contains a hyperlink
+        # Extract the URL from the hyperlink
+        hyperlink_url = hyperlink.strip("=HYPERLINK(").rstrip(")").split(",")[0].strip('"')
+        
+        # Download the HTML content
+        html_content = download_html(hyperlink_url)
+        
+        if html_content:
+            # Generate a filename from the hyperlink cell value
+            filename = f"downloaded_{index}.html"
+            
+            # Save the HTML content to a file
+            with open(filename, 'w', encoding='utf-8') as file:
+                file.write(html_content)
+            
+            print(f"Downloaded HTML content from {hyperlink_url} and saved as {filename}")
+
+print("HTML files downloaded successfully.")
