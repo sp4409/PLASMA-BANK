@@ -1,5 +1,25 @@
+import pandas as pd
+import requests
+from urllib.parse import urlparse
 import openpyxl
 
+# Function to download HTML files
+def download_html_file(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            # Extract the filename from the URL
+            file_name = urlparse(url).path.split('/')[-1]
+            # Save the HTML content to a file
+            with open(file_name, 'wb') as file:
+                file.write(response.content)
+            print(f"Downloaded: {file_name}")
+        else:
+            print(f"Failed to download: {url}")
+    except Exception as e:
+        print(f"Error downloading {url}: {str(e)}")
+
+# Function to get hyperlink address from Excel
 def get_hyperlink_address(excel_file, sheet_name, cell_address):
     try:
         # Load the Excel workbook
@@ -20,20 +40,25 @@ def get_hyperlink_address(excel_file, sheet_name, cell_address):
         print(f"Error: {e}")
         return None
 
-# Example usage:
+# Replace 'your_excel_file.xlsx' and 'Sheet1' with the actual file and sheet name
 excel_file = 'your_excel_file.xlsx'
 sheet_name = 'Sheet1'
 
-# Find the last row in column K
-workbook = openpyxl.load_workbook(excel_file, data_only=True)
-sheet = workbook[sheet_name]
-last_row = sheet.max_row
+# Load the Excel file
+df = pd.read_excel(excel_file)
 
-# Iterate through cell addresses from K2 to the last cell in column K
-for row_number in range(2, last_row + 1):
-    cell_address = f'K{row_number}'
+# Assuming the HTML file URLs are in a column named 'URL'
+url_column = 'URL'
+
+# Iterate through the URLs in the Excel file, download HTML files, and get hyperlinks
+for index, row in df.iterrows():
+    url = row[url_column]
+    download_html_file(url)
+    
+    # Get hyperlink address for cell K(index+2)
+    cell_address = f'K{index + 2}'
     hyperlink_address = get_hyperlink_address(excel_file, sheet_name, cell_address)
-
+    
     if hyperlink_address:
         print(f"Hyperlink address for cell {cell_address}: {hyperlink_address}")
     else:
