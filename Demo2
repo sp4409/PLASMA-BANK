@@ -1,0 +1,42 @@
+import openpyxl
+import os
+import requests
+
+# Define the schema or structure for organizing downloaded HTML files
+download_directory = 'downloaded_html_files/'
+
+# Create the download directory if it doesn't exist
+os.makedirs(download_directory, exist_ok=True)
+
+# Load the Excel file
+workbook = openpyxl.load_workbook('your_excel_file.xlsx')
+
+# Replace 'Sheet1' with the name of the sheet containing your data
+sheet = workbook['Sheet1']
+
+# Replace 'A' with the column where your hyperlinks are located
+column_with_hyperlinks = 'A'
+
+# Iterate through the rows in the specified column
+for row in sheet.iter_rows(min_row=2, max_col=1):  # Assuming the header is in row 1
+    cell = row[0]
+    if cell.hyperlink is not None:
+        hyperlink_url = cell.hyperlink.target
+        hyperlink_name = cell.value  # Use the cell value as the filename
+        file_path = os.path.join(download_directory, hyperlink_name)
+
+        # Download the HTML content
+        response = requests.get(hyperlink_url)
+        if response.status_code == 200:
+            html_content = response.text
+
+            # Save the HTML content to a file
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(html_content)
+
+            print(f'Downloaded HTML: {hyperlink_name}')
+        else:
+            print(f'Failed to download HTML: {hyperlink_name}')
+
+# Close the Excel file
+workbook.close()
