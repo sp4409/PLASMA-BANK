@@ -24,8 +24,13 @@ def get_hyperlink_address(excel_file, sheet_name, cell_address):
 excel_file = 'your_excel_file.xlsx'
 sheet_name = 'Sheet1'
 
-# Iterate through cell addresses from K2 to K50
-for row_number in range(2, 51):  # Assumes you want to iterate from row 2 to 50
+# Find the last row in column K
+workbook = openpyxl.load_workbook(excel_file, data_only=True)
+sheet = workbook[sheet_name]
+last_row = sheet.max_row
+
+# Iterate through cell addresses from K2 to the last cell in column K
+for row_number in range(2, last_row + 1):
     cell_address = f'K{row_number}'
     hyperlink_address = get_hyperlink_address(excel_file, sheet_name, cell_address)
 
