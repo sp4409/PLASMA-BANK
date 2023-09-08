@@ -3,6 +3,7 @@ import requests
 from urllib.parse import urlparse
 import openpyxl
 import os
+import threading
 
 # Function to download HTML files into a folder
 def download_html_file(url, folder_path):
@@ -21,6 +22,27 @@ def download_html_file(url, folder_path):
     except Exception as e:
         print(f"Error downloading {url}: {str(e)}")
 
+# Function to get hyperlink address from Excel
+def get_hyperlink_address(excel_file, sheet_name, cell_address):
+    try:
+        # Load the Excel workbook
+        workbook = openpyxl.load_workbook(excel_file, data_only=True)
+        
+        # Select the desired sheet
+        sheet = workbook[sheet_name]
+        
+        # Get the hyperlink from the specified cell
+        hyperlink = sheet[cell_address].hyperlink
+
+        if hyperlink:
+            return hyperlink.target
+        else:
+            return None
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
 # Replace 'your_excel_file.xlsx' and 'Sheet1' with the actual file and sheet name
 excel_file = 'your_excel_file.xlsx'
 sheet_name = 'Sheet1'
@@ -36,16 +58,34 @@ df = pd.read_excel(excel_file)
 # Assuming the HTML file URLs are in a column named 'URL'
 url_column = 'URL'
 
-# Iterate through the URLs in the Excel file, download HTML files into the folder
-for index, row in df.iterrows():
-    url = row[url_column]
-    download_html_file(url, output_folder)
-    
-    # Get hyperlink address for cell K(index+2)
-    cell_address = f'K{index + 2}'
-    hyperlink_address = get_hyperlink_address(excel_file, sheet_name, cell_address)
-    
-    if hyperlink_address:
-        print(f"Hyperlink address for cell {cell_address}: {hyperlink_address}")
-    else:
-        print(f"No hyperlink found in cell {cell_address}.")
+# Function to download files concurrently
+def download_concurrently(start, end):
+    for index in range(start, end):
+        url = df.at[index, url_column]
+        download_html_file(url, output_folder)
+        
+        # Get hyperlink address for cell K(index+2)
+        cell_address = f'K{index + 2}'
+        hyperlink_address = get_hyperlink_address(excel_file, sheet_name, cell_address)
+        
+        if hyperlink_address:
+            print(f"Hyperlink address for cell {cell_address}: {hyperlink_address}")
+        else:
+            print(f"No hyperlink found in cell {cell_address}.")
+
+# Number of threads for concurrent downloading
+num_threads = 5  # Adjust this number as needed
+
+# Split the work among threads
+thread_list = []
+batch_size = len(df) // num_threads
+for i in range(num_threads):
+    start = i * batch_size
+    end = (i + 1) * batch_size if i < num_threads - 1 else len(df)
+    thread = threading.Thread(target=download_concurrently, args=(start, end))
+    thread_list.append(thread)
+    thread.start()
+
+# Wait for all threads to finish
+for thread in thread_list:
+    thread.join()
