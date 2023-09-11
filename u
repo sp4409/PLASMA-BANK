@@ -89,3 +89,50 @@ for i in range(num_threads):
 # Wait for all threads to finish
 for thread in thread_list:
     thread.join()
+
+
+
+
+
+
+
+def download_html_file(url, folder_path, name_column):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            # Extract the filename from the URL
+            file_name = urlparse(url).path.split('/')[-1]
+            
+            # Get the corresponding name from the 'Name' column
+            name = df[df['URL'] == url][name_column].iloc[0]
+            
+            # Replace any characters in the name that are not suitable for filenames
+            name = "".join(c if c.isalnum() or c in (' ', '-', '_') else '_' for c in name)
+            
+            # Combine the name and file extension
+            file_name = f"{name}{os.path.splitext(file_name)[1]}"
+            
+            # Save the HTML content to a file inside the folder
+            file_path = os.path.join(folder_path, file_name)
+            with open(file_path, 'wb') as file:
+                file.write(response.content)
+            print(f"Downloaded: {file_name}")
+        else:
+            print(f"Failed to download: {url}")
+    except Exception as e:
+        print(f"Error downloading {url}: {str(e)}")
+
+# Update the download_concurrently function to pass the 'Name' column name
+def download_concurrently(start, end, name_column):
+    for index in range(start, end):
+        url = df.at[index, url_column]
+        download_html_file(url, output_folder, name_column)  # Pass the 'Name' column name
+
+        # Get hyperlink address for cell K(index+2)
+        cell_address = f'K{index + 2}'
+        hyperlink_address = get_hyperlink_address(excel_file, sheet_name, cell_address)
+
+        if hyperlink_address:
+            print(f"Hyperlink address for cell {cell_address}: {hyperlink_address}")
+        else:
+            print(f"No hyperlink found in cell {cell_address}.")
