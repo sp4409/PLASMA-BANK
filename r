@@ -35,3 +35,38 @@ for index, row in df.iterrows():
     download_html_from_link(clickable_link, output_directory)
 
 print("HTML files downloaded successfully.")
+
+
+//////////////////////////////////////////////////////////////
+
+# Function to download HTML files into a folder and rename them with ARTICLE_TITLE
+def download_html_file(url, folder_path, article_title):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            file_name = urlparse(url).path.split('/')[-1]
+            
+            # Use ARTICLE_TITLE as the new file name (replace spaces with underscores)
+            new_file_name = f"{article_title.replace(' ', '_')}.html"
+            
+            file_path = os.path.join(folder_path, new_file_name)
+            with open(file_path, 'wb') as file:
+                file.write(response.content)
+            print(f"Downloaded and renamed: {new_file_name}")
+        else:
+            print(f"Download Failed: {url}")
+    except Exception as e:
+        print(f"Download Error for {url}: {str(e)}")
+
+# ...
+
+# Inside your loop for downloading files
+for index, row in df.iterrows():
+    cell_address = f'K{index + 2}'  # Adjust the cell address as needed
+    url = get_hyperlink_address(excel_file, sheet_name, cell_address)
+    article_title = row['ARTICLE_TITLE']  # Get ARTICLE_TITLE for the current row
+    if url:
+        download_html_file(url, output_folder, article_title)
+    else:
+        print(f"No hyperlink found in cell {cell_address}.")
+
