@@ -1,36 +1,47 @@
-import pandas as pd
+Import pandas as pd
 import requests
+from urllib.parse import urlparse
+import openpyxl
 import os
-from urllib.parse import urlparse, unquote
 
-# Load the Excel file containing the hyperlinks
-excel_file = 'links.xlsx'  # Replace with the path to your Excel file
-df = pd.read_excel(excel_file)
+def download_html_file(url, folder_path):
+	try:
+		response requests.get(url)
+		if response.status_code=200:
+			file_name=urlparse(url).path.split('/')[-1]
+			file_path=os.path.join(folder_path, file_name)
+			with open(file_path, 'wb') as file:
+				file.write(response.content)
+			print (f"Downloaded: {file_name}")
+		else:
+			print (f"Download Failed: {url}")
+	except Exception as e:
+		print (f"Download Error for (url): {str(e)}")
 
-# Create a directory to store the downloaded HTML files (if it doesn't exist)
-output_directory = 'downloaded_html'
-os.makedirs(output_directory, exist_ok=True)
 
-# Define a function to download HTML from a URL and save it with the original hyperlink name
-def download_and_rename(link):
-    try:
-        response = requests.get(link)
-        if response.status_code == 200:
-            parsed_url = urlparse(link)
-            filename = os.path.join(output_directory, unquote(parsed_url.path).split('/')[-1])
-            
-            with open(filename, 'wb') as file:
-                file.write(response.content)
-                
-            print(f"Downloaded and saved {filename}")
-        else:
-            print(f"Failed to download {link}. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error downloading {link}: {e}")
+def get_hyperlink_address (excel_file, sheet_name, cell_address):
+	try:
+		workbook=openpyxl.load_workbook (excel_file, data_only=True)
+		sheet=workbook[sheet_name]
+		hyperlink=sheet [cell_address].hyperlink
+		if hyperlink:
+			return hyperlink.target
+		else:
+			return None
+	except Exception as e:
+		print("Error: {e}")
+		return None
 
-# Iterate through the hyperlinks and download HTML, renaming the files
+excel file ='Memento_articles_APS-PRM.xlsx'
+
+sheet_name='Sheet1'
+
+output_folder='Downloaded html files from excel'
+if not os.path.exists(output_folder):
+	os.makedirs (output_folder)
+df=pd.read_excel (excel_file)
+url_column='ARTICLE_CONTENT_DOWNLOAD_LINK'
 for index, row in df.iterrows():
-    hyperlink = row['Hyperlink']  # Assuming your Excel column is named 'Hyperlink'
-    download_and_rename(hyperlink)
-
-print("HTML files downloaded and renamed successfully.")
+	cell_address=f'K{index+ 815}'
+	url=get_hyperlink_address(excel_file, sheet_name, cell_address)
+	download_html_file(url,output_folder)	
